@@ -223,6 +223,24 @@ section h2 {
   margin: 50px 0 30px;
 }
 
+/* Media screen for mobile view change details top to column for flex direction */
+@media screen and (max-width: 768px) {
+  .details-top {
+    flex-direction: column;
+  }
+
+  .card-img-top {
+    width: 100%;
+  }
+
+  .img-width {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+
+}
+
 .details-top img {
   width: 400px;
   height: 100%;

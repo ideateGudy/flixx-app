@@ -11,6 +11,13 @@ const global = {
     apiKey: "247bce7d091a0eb400978d65d2906dfd",
     apiUrl: "https://api.themoviedb.org/3/",
   },
+  recommend: {
+    type: "",
+    term: "",
+  },
+  movieRec: {
+    title: "",
+  },
 };
 
 //Display 20 most popular movies
@@ -83,6 +90,88 @@ async function displayPopularShows() {
   });
 }
 
+//Display 20 most Upcoming movies
+async function displayUpcomingMovies() {
+  const { results } = await fetchAPIData("movie/upcoming");
+
+  results.forEach((movie) => {
+    const div = document.createElement("div");
+    div.classList.add("card");
+    div.innerHTML = `
+   <a href="movie-details.html?id=${movie.id}">
+      ${
+        movie.poster_path
+          ? `<img
+        src="https://image.tmdb.org/t/p/w500${movie.poster_path}"
+        class="card-img-top"
+        alt="${movie.title}"
+      />`
+          : `<img
+      src="../images/no-image.jpg"
+      class="card-img-top"
+      alt="${movie.title}"
+    />`
+      }
+    </a>
+    <div class="card-body">
+      <h5 class="card-title">${movie.title}</h5>
+      <p class="card-text">
+        <small class="text-muted">Release: ${movie.release_date}</small>
+      </p>
+    </div>
+  `;
+
+    document.querySelector("#upcoming-movies").appendChild(div);
+  });
+}
+
+//Display 20 most Recommended movies
+async function displayRecommendedMovies() {
+  const movieId = window.location.search.split("=")[1];
+  console.log(movieId);
+  console.log(location.href);
+  console.log(location.search);
+  console.log(location.pathname);
+
+  const { results: movies } = await fetchAPIData(
+    `movie/${movieId}/recommendations`
+  ); //BUG: movieId is
+
+  movies.forEach((movie) => {
+    const recommendEl = document.querySelector("#recommend");
+    recommendEl.innerHTML = `Recommended Movies`;
+
+    // document.querySelector("#recommend").appendChild(h1);
+    const div = document.createElement("div");
+    div.classList.add("card");
+    div.innerHTML = `
+   <a href="movie-details.html?id=${movie.id}">
+      ${
+        movie.poster_path
+          ? `<img
+        src="https://image.tmdb.org/t/p/w500${movie.poster_path}"
+        class="card-img-top"
+        alt="${movie.title}"
+      />`
+          : `<img
+      src="../images/no-image.jpg"
+      class="card-img-top"
+      alt="${movie.title}"
+    />`
+      }
+    </a>
+    <div class="card-body">
+      <h5 class="card-title">${movie.title}</h5>
+      <p class="card-text">
+        <small class="text-muted">Release: ${movie.release_date}</small>
+      </p>
+    </div>
+  `;
+
+    document.querySelector("#recommended-movies").appendChild(div);
+  });
+}
+
 //Display Movie Details
 
 async function displayMovieDetails() {
@@ -90,13 +179,16 @@ async function displayMovieDetails() {
 
   const movie = await fetchAPIData(`movie/${movieId}`);
 
+  global.movieRec.title = movie.title;
+  console.log(global.movieRec.title);
+
   // Overlay for background image
   displayBackgroundImage("movie", movie.backdrop_path);
 
   const div = document.createElement("div");
   div.innerHTML = `
   <div class="details-top">
-  <div>
+  <div class="img-width">
   ${
     movie.poster_path
       ? `<img
@@ -128,6 +220,9 @@ async function displayMovieDetails() {
     <a href="${
       movie.homepage
     }" target="_blank" class="btn">Visit Movie Homepage</a>
+    <a href="recommendations.html?id=${
+      movie.id
+    }" target="_blank" class="btn">Recommendations</a>
   </div>
 </div>
 <div class="details-bottom">
@@ -199,6 +294,7 @@ async function displayShowDetails() {
     <a href="${
       show.homepage
     }" target="_blank" class="btn">Visit Tv Show Homepage</a>
+    
   </div>
 </div>
 <div class="details-bottom">
@@ -321,34 +417,6 @@ function displaySearchResult(results) {
   displayPagination();
 }
 
-// Display Slider Movies
-async function displaySearchResultDetails(switchEl) {
-  const { results } = await fetchAPIData("${switchEl}/now_playing");
-
-  results.forEach((movie) => {
-    const div = document.createElement("div");
-    div.classList.add("swiper-slide");
-
-    div.innerHTML = `
-    
-    <a href="movie-details.html?id=${movie.id}">
-      <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${
-      movie.title
-    }" />
-    </a>
-    <h4 class="swiper-rating">
-      <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(
-        1
-      )} / 10
-    </h4>
-  `;
-
-    document.querySelector(".swiper-wrapper").appendChild(div);
-
-    initSwiper();
-  });
-}
-
 //Create and display pagination for search
 
 function displayPagination() {
@@ -389,6 +457,34 @@ function displayPagination() {
 // Display Slider Movies
 async function displaySlider() {
   const { results } = await fetchAPIData("movie/now_playing");
+
+  results.forEach((movie) => {
+    const div = document.createElement("div");
+    div.classList.add("swiper-slide");
+
+    div.innerHTML = `
+    
+    <a href="movie-details.html?id=${movie.id}">
+      <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${
+      movie.title
+    }" />
+    </a>
+    <h4 class="swiper-rating">
+      <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(
+        1
+      )} / 10
+    </h4>
+  `;
+
+    document.querySelector(".swiper-wrapper").appendChild(div);
+
+    initSwiper();
+  });
+}
+
+// Display Slider Tv Shows On air
+async function displayAirSlider() {
+  const { results } = await fetchAPIData("tv/on_the_air");
 
   results.forEach((movie) => {
     const div = document.createElement("div");
@@ -522,14 +618,17 @@ function init() {
       displayPopularShows();
       break;
     case "/movie-details.html":
-      // redirectToMovie();
       displayMovieDetails();
-
       break;
     case "/tv-details.html":
-      // redirectToMovie();
       displayShowDetails();
-
+      break;
+    case "/upcoming.html":
+      displayUpcomingMovies();
+      break;
+    case "/recommendations.html":
+      displayAirSlider();
+      displayRecommendedMovies();
       break;
     case "/search.html":
       search();
