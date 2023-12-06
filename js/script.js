@@ -283,7 +283,7 @@ function displaySearchResult(results) {
     const div = document.createElement("div");
     div.classList.add("card");
     div.innerHTML = `
-   <a href="${global.search.type}.html?id=${result.id}">
+   <a href="${global.search.type}-details.html?id=${result.id}">
       ${
         result.poster_path
           ? `<img
@@ -319,6 +319,34 @@ function displaySearchResult(results) {
   });
 
   displayPagination();
+}
+
+// Display Slider Movies
+async function displaySearchResultDetails(switchEl) {
+  const { results } = await fetchAPIData("${switchEl}/now_playing");
+
+  results.forEach((movie) => {
+    const div = document.createElement("div");
+    div.classList.add("swiper-slide");
+
+    div.innerHTML = `
+    
+    <a href="movie-details.html?id=${movie.id}">
+      <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${
+      movie.title
+    }" />
+    </a>
+    <h4 class="swiper-rating">
+      <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(
+        1
+      )} / 10
+    </h4>
+  `;
+
+    document.querySelector(".swiper-wrapper").appendChild(div);
+
+    initSwiper();
+  });
 }
 
 //Create and display pagination for search
@@ -494,15 +522,20 @@ function init() {
       displayPopularShows();
       break;
     case "/movie-details.html":
+      // redirectToMovie();
       displayMovieDetails();
+
       break;
     case "/tv-details.html":
+      // redirectToMovie();
       displayShowDetails();
+
       break;
     case "/search.html":
       search();
+      break;
     default:
-      console.log("Not Found");
+      console.log("Not Found in current page");
       break;
   }
   highlightActiveLink();
